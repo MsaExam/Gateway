@@ -1,0 +1,34 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+
+      routes:
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/orders/**
+          filters:
+            - AddRequestHeader=X-Gateway-Auth, my-secret-key
+        - id: product-service-1
+          uri: ${PRODUCT_SERVICE_1_URI:http://localhost:19093}
+          predicates:
+            - Path=/products/**
+            - Weight=group-product, 7
+          filters:
+            - AddRequestHeader=X-Gateway-Auth, my-secret-key
+        - id: product-service-2
+          uri: ${PRODUCT_SERVICE_2_URI:http://localhost:19094}
+          predicates:
+            - Path=/products/**
+            - Weight=group-product, 3
+          filters:
+            - AddRequestHeader=X-Gateway-Auth, my-secret-key
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - AddRequestHeader=X-Gateway-Auth, my-secret-key
